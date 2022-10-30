@@ -2,34 +2,35 @@ import { NextFunction, Request, Response } from "express";
 import { verify } from "jsonwebtoken";
 
 interface IPayload {
-    sub: string;
+  sub: string;
 }
 
-export async function ensureAuthenticateCustomer(request: Request, response: Response, next: NextFunction) {
+export async function ensureAuthenticateCustomer(
+  request: Request,
+  response: Response,
+  next: NextFunction
+) {
+  const authHeader = request.headers.authorization;
 
-    const authHeader = request.headers.authorization;
+  if (!authHeader)
+    return response.status(401).json({
+      message: "Token missing",
+    });
 
-    if(!authHeader) 
-        return response.status(401).json({
-            message: "Token missing"
-        });
+  const [, token] = authHeader.split(" ");
 
-    const [, token] = authHeader.split(" ");
+  try {
+    const { sub } = verify(
+      token,
+      "604e2733b5ccaa0c8668e1f63afb0498"
+    ) as IPayload;
 
-    try {
+    request.id_customer = sub;
 
-        const { sub } = verify(token, "604e2733b5ccaa0c8668e1f63afb0498") as IPayload;
-
-        request.id_customer = sub;
-
-        return next();
-
-    } catch (error) {
-
-        return response.status(401).json({
-            message: "Invalid token!"
-        });
-
-    }
-    
+    return next();
+  } catch (error) {
+    return response.status(401).json({
+      message: "Invalid token!",
+    });
+  }
 }
