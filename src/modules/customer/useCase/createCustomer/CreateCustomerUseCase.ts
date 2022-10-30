@@ -12,6 +12,7 @@ export class CreateCustomerUseCase {
         const customerExists = await prisma.customer.findFirst({
             where: {
                 username: {
+                    equals: username,
                     mode: "insensitive"
                 }
             }
